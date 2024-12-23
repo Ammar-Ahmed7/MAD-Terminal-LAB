@@ -24,5 +24,34 @@ export const auth = initializeAuth(app, {
 
 export const db = getFirestore(app);
 
+// Add the signUpWithEmail function
+export const signUpWithEmail = async (
+    email: string, 
+    password: string, 
+    userData: Partial<UserProfile>
+) => {
+    try {
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        
+        // Create user profile in Firestore
+        await setDoc(doc(db, 'users', userCredential.user.uid), {
+            uid: userCredential.user.uid,
+            email: userCredential.user.email,
+            ...userData,
+            createdAt: serverTimestamp(),
+            wishlist: [],
+            preferences: {
+                notifications: true,
+                newsletter: false,
+                categories: [],
+            },
+        });
+
+        return userCredential.user;
+    } catch (error) {
+        throw error;
+    }
+};
+
 
 export { app };
